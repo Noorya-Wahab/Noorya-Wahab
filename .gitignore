@@ -1,0 +1,5 @@
+node_modules
+dist
+.env
+# Raw API data is only an intermediate file; the SVG is the real output
+public/contributions.json
