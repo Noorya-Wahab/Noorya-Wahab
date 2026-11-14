@@ -25,9 +25,10 @@ if (!token || !username) {
 }
 
 const QUERY = /* GraphQL */ `
-  query ($login: String!, $from: DateTime!, $to: DateTime!) {
+  query ($login: String!) {
     user(login: $login) {
-      contributionsCollection(from: $from, to: $to) {
+      # No from/to: GitHub's default window is the same "last year" your profile shows.
+      contributionsCollection {
         contributionCalendar {
           totalContributions
           weeks {
@@ -43,9 +44,6 @@ const QUERY = /* GraphQL */ `
   }
 `
 
-const to = new Date()
-const from = new Date(to.getTime() - 365 * 24 * 60 * 60 * 1000)
-
 const res = await fetch('https://api.github.com/graphql', {
   method: 'POST',
   headers: {
@@ -55,7 +53,7 @@ const res = await fetch('https://api.github.com/graphql', {
   },
   body: JSON.stringify({
     query: QUERY,
-    variables: { login: username, from: from.toISOString(), to: to.toISOString() },
+    variables: { login: username },
   }),
 })
 
@@ -66,7 +64,7 @@ if (!res.ok) {
 }
 
 const json = (await res.json()) as {
-  data?: { user: { contributionsCollection: { contributionCalendar: { weeks: RawCalendarWeek[] } } } | null }
+  data?: { user: { contributionsCollection: { contributionCalendar: { totalContributions: number; weeks: RawCalendarWeek[] } } } | null }
   errors?: { message: string }[]
 }
 
@@ -80,7 +78,11 @@ if (!json.data?.user) {
 }
 
 const calendar = json.data.user.contributionsCollection.contributionCalendar
-const data = buildContributionData(calendar.weeks, { source: 'github', username })
+const data = buildContributionData(calendar.weeks, {
+  source: 'github',
+  username,
+  total: calendar.totalContributions, // matches the number on your GitHub profile
+})
 
 const out = resolve(root, 'public/contributions.json')
 await mkdir(dirname(out), { recursive: true })

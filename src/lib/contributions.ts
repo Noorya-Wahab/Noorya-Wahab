@@ -15,7 +15,7 @@ export interface ContributionData {
   source: 'github' | 'mock'
   username: string | null
   generatedAt: string
-  /** Sum of the weeks actually displayed */
+  /** GitHub's own "contributions in the last year" figure (or, for mock data, the sum of the displayed weeks) */
   total: number
   /** Exactly WEEKS_TO_SHOW columns, oldest first */
   weeks: ContributionWeek[]
@@ -33,7 +33,7 @@ export type Level = 0 | 1 | 2 | 3 | 4
 /** Turn the raw GraphQL calendar into the 52x7 grid the renderer expects. */
 export function buildContributionData(
   rawWeeks: RawCalendarWeek[],
-  meta: { source: ContributionData['source']; username: string | null },
+  meta: { source: ContributionData['source']; username: string | null; total?: number },
 ): ContributionData {
   // A 365-day range touches 53 week columns (partial first + last); keep the newest 52.
   const weeks: ContributionWeek[] = rawWeeks.slice(-WEEKS_TO_SHOW).map((week) => {
@@ -47,9 +47,11 @@ export function buildContributionData(
   // Very new accounts: pad the left so the grid is always 52 columns wide.
   while (weeks.length < WEEKS_TO_SHOW) weeks.unshift(Array(7).fill(null))
 
-  const total = weeks.reduce((sum, w) => sum + w.reduce((s, d) => s + (d?.count ?? 0), 0), 0)
+  // GitHub's year window spans ~53 week columns but the grid shows 52, so prefer
+  // the API's own total over summing the visible weeks.
+  const total = meta.total ?? weeks.reduce((sum, w) => sum + w.reduce((s, d) => s + (d?.count ?? 0), 0), 0)
 
-  return { ...meta, generatedAt: new Date().toISOString(), total, weeks }
+  return { source: meta.source, username: meta.username, generatedAt: new Date().toISOString(), total, weeks }
 }
 
 /**
