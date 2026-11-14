@@ -17,11 +17,6 @@ export default function App() {
   return (
     <main className="page">
       <Contributions data={data} />
-      <p className="note">
-        {data.source === 'mock'
-          ? 'Showing mock data. Run "npm run fetch" to use your real contributions.'
-          : `Live data for @${data.username}`}
-      </p>
     </main>
   )
 }

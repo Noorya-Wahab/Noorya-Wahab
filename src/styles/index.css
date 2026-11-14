@@ -1,5 +1,9 @@
 /* Page chrome only. The graph's own look lives in the SVG component. */
-html, body { margin: 0; background: #000; }
+html,
+body {
+  margin: 0;
+  background: #00000000;
+}
 .page {
   min-height: 100vh;
   display: flex;
@@ -10,5 +14,15 @@ html, body { margin: 0; background: #000; }
   padding: 24px;
   box-sizing: border-box;
 }
-.page svg { max-width: 100%; height: auto; }
-.note { margin: 0; font: 12px ui-sans-serif, system-ui, sans-serif; color: #6b6b78; }
+.page svg {
+  max-width: 100%;
+  height: auto;
+}
+.note {
+  margin: 0;
+  font:
+    12px ui-sans-serif,
+    system-ui,
+    sans-serif;
+  color: #6b6b78;
+}

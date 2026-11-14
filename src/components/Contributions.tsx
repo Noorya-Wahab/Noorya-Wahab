@@ -45,7 +45,6 @@ const MEOW_PIXELS = new Set([
   '23,2',
   '23,3',
   '23,4',
-  // W
   '27,1',
   '27,2',
   '27,3',
@@ -83,15 +82,18 @@ const ART = '#FCDDF8'
 const LABEL = '#f391c9'
 const FOOTER = '#e59ac8'
 
+const TRIM = 100
+
 const WIDTH = 2009
-const HEIGHT = 783
+const HEIGHT = 783 - TRIM
 const CELL = 25.3
 const STEP = 30.15
 const COLS = 52
 const ROWS = 7
 const GRID_X = 273
-const GRID_Y = 356
-const CARD = { x: 68, y: 65, w: 1874, h: 652, r: 76 }
+const GRID_Y = 356 - TRIM
+const CARD = { x: 68, y: 65, w: 1874, h: 652 - TRIM, r: 76 }
+const FOOT_Y = 655 - TRIM
 
 const FONT =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
@@ -156,7 +158,7 @@ function GlowFilter({
 
 function SoftFilter({ id, sigma }: { id: string; sigma: number }) {
   return (
-    <filter id={id} {...REGION}>
+    <filter id={id} x="-60%" y="-60%" width="220%" height="220%">
       <feGaussianBlur in="SourceGraphic" stdDeviation={sigma} result="b" />
       <feMerge>
         <feMergeNode in="b" />
@@ -206,34 +208,42 @@ function heartPath(s: number) {
   const p = (n: number) => +(n * s).toFixed(2)
   return `M 0 ${p(0.95)} C ${p(-1.3)} ${p(-0.1)} ${p(-0.95)} ${p(-1)} ${p(-0.4)} ${p(-1)} C ${p(-0.15)} ${p(-1)} 0 ${p(-0.85)} 0 ${p(-0.65)} C 0 ${p(-0.85)} ${p(0.15)} ${p(-1)} ${p(0.4)} ${p(-1)} C ${p(0.95)} ${p(-1)} ${p(1.3)} ${p(-0.1)} 0 ${p(0.95)} Z`
 }
+const TOP_Y = 108
 
 const SPARKLES: [number, number, number][] = [
-  [162, 208, 32],
-  [662, 112, 22],
-  [877, 208, 15],
-  [166, 132, 9],
-  [1265, 177, 9],
-  [1530, 147, 9],
-  [145, 622, 26],
-  [1883, 540, 7],
-  [777, 655, 14],
-  [1231, 655, 14],
-  [127, 377, 4],
-  [1654, 253, 4],
-  [1885, 300, 4],
+  [190, 112, 20],
+  [662, 108, 15],
+  [1000, 116, 9],
+  [1265, 108, 11],
+  [1530, 112, 9],
+  [1655, 116, 5],
+  [1795, 112, 24],
+  [1892, 238, 12],
+  [1700, 318, 6],
+  [1884, 392, 8],
+  [127, 222, 4],
+
+  // bottom band (on the footer line)
+  [125, FOOT_Y, 13],
+  [260, FOOT_Y, 10],
+  [777, FOOT_Y, 14],
+  [1231, FOOT_Y, 14],
+  [1750, FOOT_Y, 10],
+  [1885, FOOT_Y, 13],
 ]
 
+const HEARTS: [number, number, number, number][] = []
+
 const DOTS: [number, number, number][] = [
-  [1060, 142, 1.5],
-  [1445, 130, 1.8],
-  [1340, 305, 1.8],
-  [113, 562, 1.5],
-  [229, 656, 1.5],
-  [1635, 625, 1.5],
-  [1704, 687, 1.5],
-  [104, 200, 2],
-  [122, 262, 1.8],
-  [131, 238, 1.4],
+  [1060, 92, 1.5],
+  [1445, 98, 1.8],
+  [1340, 150, 1.8],
+  [113, 407, 1.5],
+  [229, 501, 1.5],
+  [1635, 470, 1.5],
+  [1704, 532, 1.5],
+  [1905, 330, 1.6],
+  [1590, 160, 1.5],
 ]
 
 function Contributions({ data }: { data: ContributionData }) {
@@ -287,6 +297,7 @@ function Contributions({ data }: { data: ContributionData }) {
 
   const heading = `${data.total.toLocaleString('en-US')} CONTRIBUTIONS!`
   const rowCenter = (row: number) => GRID_Y + row * STEP + CELL / 2 + 9.5
+  const cardCorner = CARD.y + CARD.h
 
   return (
     <svg
@@ -317,7 +328,6 @@ function Contributions({ data }: { data: ContributionData }) {
         <GlowFilter id="gc-glow-lowest" {...GLOWS.lowest} />
         <SoftFilter id="gc-soft" sigma={10} />
         <SoftFilter id="gc-soft-sm" sigma={3} />
-        <GlowFilter id="gc-border-glow" sigma={6} opacity={1} color="#ff5cbd" />
         <GlowFilter id="gc-inner-glow" sigma={14} opacity={0.35} color={GLOW} />
 
         <TextGlowFilter
@@ -346,97 +356,6 @@ function Contributions({ data }: { data: ContributionData }) {
           />
         </clipPath>
 
-        <linearGradient id="gc-card-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#0c040c" />
-          <stop offset="1" stopColor="#09030a" />
-        </linearGradient>
-        <radialGradient
-          id="gc-ambient"
-          gradientUnits="userSpaceOnUse"
-          cx={GRID_X + (COLS * STEP) / 2}
-          cy={GRID_Y + 105}
-          r={900}
-          gradientTransform={`translate(${GRID_X + (COLS * STEP) / 2} ${GRID_Y + 105}) scale(1 0.32) translate(${-(GRID_X + (COLS * STEP) / 2)} ${-(GRID_Y + 105)})`}
-        >
-          <stop offset="0" stopColor={GLOW} stopOpacity={0.32} />
-          <stop offset="1" stopColor={GLOW} stopOpacity={0} />
-        </radialGradient>
-        <radialGradient
-          id="gc-corner-bl"
-          gradientUnits="userSpaceOnUse"
-          cx={120}
-          cy={690}
-          r={190}
-        >
-          <stop offset="0" stopColor={GLOW} stopOpacity={0.35} />
-          <stop offset="1" stopColor={GLOW} stopOpacity={0} />
-        </radialGradient>
-        <radialGradient
-          id="gc-corner-br"
-          gradientUnits="userSpaceOnUse"
-          cx={1830}
-          cy={650}
-          r={260}
-        >
-          <stop offset="0" stopColor={GLOW} stopOpacity={0.3} />
-          <stop offset="1" stopColor={GLOW} stopOpacity={0} />
-        </radialGradient>
-        <radialGradient
-          id="gc-corner-tl"
-          gradientUnits="userSpaceOnUse"
-          cx={150}
-          cy={215}
-          r={170}
-        >
-          <stop offset="0" stopColor={GLOW} stopOpacity={0.3} />
-          <stop offset="1" stopColor={GLOW} stopOpacity={0} />
-        </radialGradient>
-        <radialGradient
-          id="gc-corner-tr"
-          gradientUnits="userSpaceOnUse"
-          cx={1830}
-          cy={170}
-          r={200}
-        >
-          <stop offset="0" stopColor={GLOW} stopOpacity={0.22} />
-          <stop offset="1" stopColor={GLOW} stopOpacity={0} />
-        </radialGradient>
-
-        <linearGradient
-          id="gc-border"
-          gradientUnits="userSpaceOnUse"
-          x1={CARD.x}
-          y1={CARD.y}
-          x2={CARD.x + CARD.w}
-          y2={CARD.y + CARD.h}
-        >
-          <stop offset="0" stopColor={PINK_LINE} stopOpacity={0.55} />
-          <stop offset="0.5" stopColor="#c8398f" stopOpacity={0.5} />
-          <stop offset="1" stopColor={PINK_LINE} stopOpacity={0.85} />
-        </linearGradient>
-
-        <linearGradient
-          id="gc-comet"
-          gradientUnits="userSpaceOnUse"
-          x1={1750}
-          y1={180}
-          x2={1290}
-          y2={290}
-        >
-          <stop offset="0" stopColor={PINK_LINE} stopOpacity={0.9} />
-          <stop offset="1" stopColor={PINK_LINE} stopOpacity={0} />
-        </linearGradient>
-        <linearGradient
-          id="gc-sweep"
-          gradientUnits="userSpaceOnUse"
-          x1={1440}
-          y1={714}
-          x2={1942}
-          y2={568}
-        >
-          <stop offset="0" stopColor={PINK_LINE} stopOpacity={0} />
-          <stop offset="1" stopColor={PINK_LINE} stopOpacity={0.9} />
-        </linearGradient>
         <linearGradient
           id="gc-foot-l"
           gradientUnits="userSpaceOnUse"
@@ -459,16 +378,6 @@ function Contributions({ data }: { data: ContributionData }) {
           <stop offset="0" stopColor={PINK_LINE} stopOpacity={0.7} />
           <stop offset="1" stopColor={PINK_LINE} stopOpacity={0} />
         </linearGradient>
-
-        <linearGradient id="gc-bow" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ff7ccb" stopOpacity={0.55} />
-          <stop offset="1" stopColor="#d83a9f" stopOpacity={0.35} />
-        </linearGradient>
-        <radialGradient id="gc-heart" cx="0.35" cy="0.3" r="0.8">
-          <stop offset="0" stopColor="#ffd0ec" />
-          <stop offset="0.45" stopColor="#f060b8" />
-          <stop offset="1" stopColor="#a8208a" />
-        </radialGradient>
       </defs>
 
       {/* Card */}
@@ -511,32 +420,6 @@ function Contributions({ data }: { data: ContributionData }) {
           fill="url(#gc-corner-tr)"
         />
       </g>
-      {/* Border + outer glow */}
-
-      <rect
-        x={CARD.x}
-        y={CARD.y}
-        width={CARD.w}
-        height={CARD.h}
-        rx={CARD.r}
-        fill="none"
-        stroke="url(#gc-border)"
-        strokeWidth={2}
-      />
-
-      <g transform="rotate(-7 449 197)">
-        <ellipse
-          cx={449}
-          cy={197}
-          rx={356}
-          ry={86}
-          fill="none"
-          stroke={PINK_LINE}
-          strokeWidth={1.6}
-          strokeOpacity={0.1}
-          filter="url(#gc-soft-sm)"
-        />
-      </g>
 
       {SPARKLES.map(([cx, cy, r]) => (
         <g key={`${cx}-${cy}`}>
@@ -548,6 +431,24 @@ function Contributions({ data }: { data: ContributionData }) {
           <path d={sparkPath(cx, cy, r * 0.6)} fill="#ffe0f3" />
         </g>
       ))}
+
+      {HEARTS.map(([x, y, s, rot]) => (
+        <g
+          key={`${x}-${y}`}
+          transform={`translate(${x} ${y}) rotate(${rot})`}
+          filter="url(#gc-soft-sm)"
+        >
+          <path
+            d={heartPath(s)}
+            fill="#ff4fa8"
+            fillOpacity={0.18}
+            stroke={PINK_LINE}
+            strokeWidth={Math.max(2, s / 7)}
+            strokeLinejoin="round"
+          />
+        </g>
+      ))}
+
       {DOTS.map(([cx, cy, r]) => (
         <circle
           key={`${cx}-${cy}`}
@@ -576,7 +477,11 @@ function Contributions({ data }: { data: ContributionData }) {
           </text>
         ))}
         {getMonthLabels(data).map(({ col, label }) => (
-          <text key={`${col}-${label}`} x={GRID_X + col * STEP + 3} y={330}>
+          <text
+            key={`${col}-${label}`}
+            x={GRID_X + col * STEP + 3}
+            y={GRID_Y - 26}
+          >
             {label}
           </text>
         ))}
@@ -585,19 +490,15 @@ function Contributions({ data }: { data: ContributionData }) {
       {glowLayers.high.length > 0 && (
         <g filter="url(#gc-glow-high)">{glowLayers.high}</g>
       )}
-
       {glowLayers.mid.length > 0 && (
         <g filter="url(#gc-glow-mid)">{glowLayers.mid}</g>
       )}
-
       {glowLayers.low.length > 0 && (
         <g filter="url(#gc-glow-low)">{glowLayers.low}</g>
       )}
-
       {glowLayers.lower.length > 0 && (
         <g filter="url(#gc-glow-lower)">{glowLayers.lower}</g>
       )}
-
       {glowLayers.lowest.length > 0 && (
         <g filter="url(#gc-glow-lowest)">{glowLayers.lowest}</g>
       )}
@@ -615,23 +516,23 @@ function Contributions({ data }: { data: ContributionData }) {
       {/* Footer */}
       <line
         x1={315}
-        y1={655}
+        y1={FOOT_Y}
         x2={745}
-        y2={655}
+        y2={FOOT_Y}
         stroke="url(#gc-foot-l)"
         strokeWidth={1.5}
       />
       <line
         x1={1265}
-        y1={655}
+        y1={FOOT_Y}
         x2={1700}
-        y2={655}
+        y2={FOOT_Y}
         stroke="url(#gc-foot-r)"
         strokeWidth={1.5}
       />
       <text
         x={830}
-        y={665}
+        y={FOOT_Y + 10}
         fontSize={30}
         fontWeight={600}
         letterSpacing={0.5}
@@ -643,6 +544,6 @@ function Contributions({ data }: { data: ContributionData }) {
     </svg>
   )
 }
-// THIS VERSION SAVE IT
+
 export { MEOW_PIXELS }
 export default Contributions
